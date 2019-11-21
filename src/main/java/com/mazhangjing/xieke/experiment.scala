@@ -16,16 +16,15 @@ import com.mazhangjing.xieke.model.{Config, Context, Question, Survey}
 import javafx.beans.property.{SimpleBooleanProperty, SimpleStringProperty}
 import javafx.event.Event
 import javafx.geometry.{HPos, Insets, Pos}
-import javafx.scene.Scene
 import javafx.scene.control.Alert.AlertType
 import javafx.scene.control.ScrollPane.ScrollBarPolicy
 import javafx.scene.control._
 import javafx.scene.image.{Image, ImageView}
 import javafx.scene.layout._
 import javafx.scene.paint.Color
-import javafx.scene.text.{Font, Text, TextAlignment}
+import javafx.scene.text.{Font, Text, TextAlignment, TextFlow}
+import javafx.scene.{Node, Scene}
 import org.slf4j.LoggerFactory
-import javafx.scene.text.FontWeight
 
 import scala.collection.JavaConverters._
 
@@ -39,57 +38,43 @@ object XKExperiment {
       |3.0.0 添加了一个格式排版的问题，关闭 Auth
       |3.1.1 添加了图片位置细节调整，添加了年龄变量的收集
       |3.1.2 添加了解释图片的上、下左右边距处理
-      |3.1.3 添加了伪造图片和解释文字的上下左右边距处理""".stripMargin
-  var TITLE_FONT_SIZE = 40
-  var FONT_SIZE = 28
-  var IMAGE_WIDTH = 800
-  var EMOTION_IMAGE_WIDTH = 170
+      |3.1.3 添加了伪造图片和解释文字的上下左右边距处理
+      |3.1.4 2019年11月21日 使用 CSS 实现大部分样式，交换指导语和前测问卷位置，添加了许多图片指导语，添加了量表表述信息，修改了许多默认值，重新实现了 AgentPane
+      |""".stripMargin
+  var FONT_SIZE = 24
+  var IMAGE_WIDTH = 1100
+  var EMOTION_IMAGE_WIDTH = 300
   var SU_SHOW_TITLE_NAME = false
-  var SU_SHOW_EXPLAIN_SIZE = 28
-  var SU_VGAP = 20
-  var SU_HGAP_5 = 10
-  var SU_HGAP_9 = 10
+  var SU_VGAP = 10
+  var SU_HGAP_5 = 50
+  var SU_HGAP_9 = 5
   var SU_SHOW_LINE = true
-  var QU_HGAP = 10
-  var HELP_PADDING_LEFT: Array[Int] = _
-  var HELP_TEXT_SPACING = 1
-  var WRAP = 0
+  var QU_HGAP = 35
+  var HELP_PADDING_LEFT: Array[Int] = Array(370,200,80)
+  var HELP_TEXT_SPACING = 2
+  var QUESTION_LAYOUT_MARGIN = 200
+  var AGENT_EXPLAIN_IMAGE_WIDTH = 700
 
-  val NORMAL_IMAGE_NAME = "normal.png"
-  val RIGHT_BORDER_IMAGE_NAME = "border_green.png"
-  val WRONG_BORDER_IMAGE_NAME = "border_red.png"
-
-  //USED
-  var DEBUG = true
+  var DEBUG = false
   var CHOOSED_CONDITION = Condition.NORMAL_SUMMARY
   val INFINITY = 100000000
   val EMOTION_SCALE = 0
   val AGENT_SCALE = 1
   val MOV_SCALE = 2
   val FEEDBACK_SCALE = 3
-  var WELCOME_INTRO = "welcome.png"
-  var EX_KIND = "练习"
-  var NORMAL_KIND = "学习"
-  var POST_KIND = "后测"
-  var FOLER_PREFIX = "xieke"
-  var QUESTION_LAYOUT_MARGIN = 400
-
-  var dialogPaddingTop = 0
-  var dialogPaddingRight = 0
-  var dialogPaddingBottom: Int = -10
-  var dialogPaddingLeft = 150
-  var textPaddingTop = 40
-  var textPaddingRight = 0
-  var textPaddingBottom = 0
-  var textPaddingLeft = 260
-  var explainImagePaddingTop = 100
-  var explainImagePaddingRight = 0
-  var explainImagePaddingBottom = 0
-  var explainImagePaddingLeft = 260
-  var explainTextPaddingTop = 100
-  var explainTextPaddingRight = 0
-  var explainTextPaddingBottom = 0
-  var explainTextPaddingLeft = 260
+  val FOLDER_PREFIX = "xieke"
+  val WELCOME_INTRO = "welcome.png"
+  val EXERCISE_INTRO = "exercise_intro.png"
+  val NORMAL_INTRO = "normal_intro.png"
+  val AFTER_LEARN_INTRO = "after_learn_intro.png"
+  val POST_QUIZ_INTRO = "post_quiz_intro.png"
+  val ALL_END_INTRO = "all_end_intro.png"
+  val NORMAL_IMAGE_NAME = "normal.png"
+  val RIGHT_BORDER_IMAGE_NAME = "border_green.png"
+  val WRONG_BORDER_IMAGE_NAME = "border_red.png"
+  val EX_KIND = "练习"
+  val NORMAL_KIND = "学习"
+  val POST_KIND = "后测"
 
   val config: Config = IO.loadConfig()
   val result = new Data()
@@ -130,23 +115,16 @@ class BasicTrial extends Trial {
     //收集用户信息
     val demo = new DemoScreen().initScreen()
     screens.add(demo)
-    //欢迎界面
-    val welcome = new ImageScreen(image = WELCOME_INTRO).initScreen()
-    screens.add(welcome)
     //情绪前测
     val preEmotionSurvey = config.getSurveys.get(EMOTION_SCALE)
     val preEmotion = new SurveyScreen(preEmotionSurvey).initScreen()
     result.preEmotion = preEmotionSurvey
     screens.add(preEmotion)
+    //欢迎界面
+    val welcome = new ImageScreen(image = WELCOME_INTRO).initScreen()
+    screens.add(welcome)
     //练习阶段
-    val exIntro = new TextScreen({
-      val t = new Text("接下来你将完成两道练习题，题目内容与学习内容无关，" +
-        "仅为了帮助你熟悉实验环境，请放心作答。")
-      t.setFont(Font.font(FONT_SIZE))
-      t.setWrappingWidth(600)
-      t.setTextAlignment(TextAlignment.LEFT)
-      t
-    }).initScreen()
+    val exIntro = new ImageScreen(image = EXERCISE_INTRO).initScreen()
     screens.add(exIntro)
     config.getQuestions.asScala.filter(_.getKind.contains(EX_KIND)).foreach(question => {
       val context = new Context()
@@ -157,13 +135,7 @@ class BasicTrial extends Trial {
       screens.add(exQuest)
     })
     //学习阶段
-    val normalIntro = new TextScreen({
-      val t = new Text("接下来你将正式开始实验。")
-      t.setFont(Font.font(FONT_SIZE))
-      t.setWrappingWidth(600)
-      t.setTextAlignment(TextAlignment.LEFT)
-      t
-    }).initScreen()
+    val normalIntro = new ImageScreen(image = NORMAL_INTRO).initScreen()
     screens.add(normalIntro)
     config.getQuestions.asScala.filter(_.getKind.contains(NORMAL_KIND)).foreach(question => {
       val context = new Context()
@@ -174,6 +146,9 @@ class BasicTrial extends Trial {
       screens.add(quest)
       result.contexts.append(context)
     })
+    //情绪后测指导语
+    val afterLearnIntro = new ImageScreen(image = AFTER_LEARN_INTRO).initScreen()
+    screens.add(afterLearnIntro)
     //情绪量表
     val postEmotionSurvey = config.getSurveys.get(EMOTION_SCALE).copy()
     val postEmotion = new SurveyScreen(postEmotionSurvey).initScreen()
@@ -195,12 +170,7 @@ class BasicTrial extends Trial {
     result.postCL = clSurvey
     screens.add(postCL)
     //成绩后测
-    val postIntro = new TextScreen({
-      val t = new Text("下面进行测试阶段，你需要完成 10 道题目，完成题目后不需要选择你的情绪状态，也不会系统反馈信息。")
-      t.setFont(Font.font(FONT_SIZE))
-      t.setWrappingWidth(500)
-      t
-    }).initScreen()
+    val postIntro = new ImageScreen(image = POST_QUIZ_INTRO).initScreen()
     screens.add(postIntro)
     val questions = config.getQuestions.asScala.filter(_.getKind.contains(POST_KIND))
     questions.foreach(question => {
@@ -212,6 +182,9 @@ class BasicTrial extends Trial {
       screens.add(sc)
       result.postContexts.append(context)
     })
+    //所有结束指导语
+    val allEnd = new ImageScreen(image = ALL_END_INTRO).initScreen()
+    screens.add(allEnd)
     this
   }
 }
@@ -302,8 +275,7 @@ class DemoScreen extends ScreenAdaptor {
     })
 
     val header = new Label("《心理统计》学习系统")
-    val font = Font.font("微软雅黑", FontWeight.EXTRA_BOLD, TITLE_FONT_SIZE)
-    header.setFont(font)
+    header.getStyleClass.add("welcome_intro_text")
     header.setAlignment(Pos.CENTER)
     BorderPane.setAlignment(header, Pos.CENTER)
     BorderPane.setMargin(header, new Insets(150,0,0,0))
@@ -317,7 +289,7 @@ class DemoScreen extends ScreenAdaptor {
   override def eventHandler(event: Event, experiment: Experiment, scene: Scene): Unit = { }
 }
 
-class ImageScreen(val prefix:String = FOLER_PREFIX,
+class ImageScreen(val prefix:String = FOLDER_PREFIX,
                   val image:String) extends ScreenAdaptor {
 
   override def initScreen(): Screen = {
@@ -412,11 +384,11 @@ class SurveyScreen(val survey:Survey) extends ScreenAdaptor {
     })
 
     val title = new Label(survey.getName)
-    title.setFont(Font.font(TITLE_FONT_SIZE))
+    title.getStyleClass.add("title_text")
     title.setVisible(SU_SHOW_TITLE_NAME)
     //根据 survey.intro 获取介绍
     val intro = new Label(survey.getIntro)
-    intro.setFont(Font.font(SU_SHOW_EXPLAIN_SIZE))
+    intro.getStyleClass.add("survey_intro_text")
     titBox.getChildren.addAll(title, intro)
     titBox.setAlignment(Pos.CENTER)
     titBox.setSpacing(10)
@@ -524,7 +496,7 @@ class SurveyScreen(val survey:Survey) extends ScreenAdaptor {
   override def eventHandler(event: Event, experiment: Experiment, scene: Scene): Unit = { }
 }
 
-class QuestionScreen(val prefix:String = FOLER_PREFIX,
+class QuestionScreen(val prefix:String = FOLDER_PREFIX,
                      val context:Context,
                      val isPost:Boolean = false) extends ScreenAdaptor {
 
@@ -606,7 +578,7 @@ class QuestionScreen(val prefix:String = FOLER_PREFIX,
     form
   }
 
-  def getAgentPane(condition: Condition, question: Question): HBox = {
+  def getAgentPane(condition: Condition, question: Question): Node = {
 
     val isRight = choosedAnswer == question.getRightChoose
 
@@ -634,20 +606,23 @@ class QuestionScreen(val prefix:String = FOLER_PREFIX,
         (emotionImage, true)
       } else (emotionImage, true)
 
-    val st = new StackPane()
+    val agentBox = new VBox()
+    agentBox.getStyleClass.add("agentAndExplainBox")
+
     //绘制人像
     val agent = new ImageView(new Image("file:" + Paths.get(prefix, imageName).toString))
     agent.setFitWidth(EMOTION_IMAGE_WIDTH)
+    agent.getStyleClass.add("agentImage")
     agent.setPreserveRatio(true)
-    st.getChildren.add(agent)
-    StackPane.setAlignment(agent, Pos.BOTTOM_LEFT)
-    StackPane.setMargin(agent, new Insets(0,0,0,0))
+    agentBox.getChildren.add(agent)
 
     //绘制对话框
-    val bv = new ImageView(new Image("file:" + Paths.get(prefix, borderImage)))
-    st.getChildren.add(bv)
-    StackPane.setAlignment(bv, Pos.BOTTOM_LEFT)
-    StackPane.setMargin(bv, new Insets(dialogPaddingTop,dialogPaddingRight,dialogPaddingBottom,dialogPaddingLeft))
+    val explainBox = new VBox()
+    explainBox.setMaxWidth(AGENT_EXPLAIN_IMAGE_WIDTH + 100)
+    explainBox.getStyleClass.add("explainBox")
+    if (isRight) explainBox.getStyleClass.add("explainBoxIfRight")
+    else explainBox.getStyleClass.add("explainBoxIfWrong")
+    agentBox.getChildren.add(explainBox)
 
     //绘制 Title
     val showTxt = if (CHOOSED_CONDITION == Condition.NORMAL_DETAIL || CHOOSED_CONDITION == Condition.NORMAL_SUMMARY) {
@@ -656,54 +631,43 @@ class QuestionScreen(val prefix:String = FOLER_PREFIX,
       text + "。" + (if (isRight) emotionTextGod else emotionTextBad)
     }
     val title = new Text(showTxt)
-    st.getChildren.add(title)
-    StackPane.setAlignment(title, Pos.TOP_LEFT)
-    StackPane.setMargin(title, new Insets(textPaddingTop, textPaddingRight, textPaddingBottom, textPaddingLeft))
     title.setFill(color)
-    title.setFont(Font.font(FONT_SIZE))
-    title.setWrappingWidth(bv.getImage.getWidth - WRAP)
+    val titleFlow = new TextFlow(title)
+    titleFlow.getStyleClass.add("explainBoxHeader")
+    explainBox.getChildren.add(titleFlow)
 
     if (showExplain) {
       if (question.getExplain.endsWith(".png") || question.getExplain.endsWith(".jpg")
         || question.getExplain.endsWith(".jpeg")) {
-        //绘制 图像
+        //绘制图像
         val img = new Image("file:" + Paths.get(prefix, question.getExplain))
         val iv = new ImageView(img)
-        bv.setFitWidth(img.getWidth + 150)
-        bv.setFitHeight(img.getHeight + 90)
-
-        st.getChildren.add(iv)
-        StackPane.setAlignment(iv, Pos.TOP_LEFT)
-        StackPane.setMargin(iv, new Insets(explainImagePaddingTop, explainImagePaddingRight,
-          explainImagePaddingBottom,explainImagePaddingLeft))
+        iv.setFitWidth(AGENT_EXPLAIN_IMAGE_WIDTH)
+        iv.setPreserveRatio(true)
+        val ivBox = new HBox()
+        ivBox.getChildren.add(iv)
+        ivBox.getStyleClass.add("explainBoxContentIfIsImage")
+        explainBox.getChildren.add(ivBox)
       } else {
         //绘制文本
         val la = new Text(question.getExplain)
-        st.getChildren.add(la)
-        la.setFont(Font.font(FONT_SIZE))
-        la.setWrappingWidth(bv.getImage.getWidth - 150)
-        StackPane.setAlignment(la ,Pos.TOP_LEFT)
-        StackPane.setMargin(la, new Insets(explainTextPaddingTop, explainTextPaddingRight,
-          explainTextPaddingBottom,explainTextPaddingLeft))
+        val laFlow = new TextFlow(la)
+        laFlow.getStyleClass.add("explainBoxContentIfIsText")
+        explainBox.getChildren.add(laFlow)
       }
     } else {
       //绘制 假图像
       val img = new Image("file:" + Paths.get(prefix, "fake_image.png"))
       val iv = new ImageView(img)
-      bv.setFitWidth(img.getWidth + 150)
-      bv.setFitHeight(img.getHeight + 90)
-
-      st.getChildren.add(iv)
-      StackPane.setAlignment(iv, Pos.TOP_LEFT)
-      StackPane.setMargin(iv, new Insets(explainImagePaddingTop, explainImagePaddingRight,
-        explainImagePaddingBottom,explainImagePaddingLeft))
+      iv.setFitWidth(AGENT_EXPLAIN_IMAGE_WIDTH)
+      iv.setPreserveRatio(true)
+      val ivBox = new HBox()
+      ivBox.getChildren.add(iv)
+      ivBox.getStyleClass.add("explainBoxContentIfIsImage")
+      explainBox.getChildren.add(ivBox)
     }
 
-    //st.setStyle("-fx-border-color:red")
-    val b = new HBox()
-    b.getChildren.add(st)
-    b.setAlignment(Pos.CENTER)
-    b
+    agentBox
   }
 
   var stageChanged = new SimpleStringProperty()
@@ -719,6 +683,8 @@ class QuestionScreen(val prefix:String = FOLER_PREFIX,
       logger.debug("Timer Start now...")
       currentTime = System.currentTimeMillis()
       box.getChildren.clear()
+      box.setAlignment(Pos.CENTER)
+      box.setSpacing(0)
       box.getChildren.addAll(questPane, feedbackPane)
     }
   })
@@ -726,7 +692,7 @@ class QuestionScreen(val prefix:String = FOLER_PREFIX,
   val box = new VBox()
   val questPane: GridPane = getQuestionPane(question)
   val emotionQueryPane: GridPane = getEmotionPane(context.emotionChooses)
-  lazy val feedbackPane: HBox = getAgentPane(context.getCondition, question)
+  lazy val feedbackPane: Node = getAgentPane(context.getCondition, question)
 
   var currentTime: Long = System.currentTimeMillis()
 

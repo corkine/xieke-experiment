@@ -1,0 +1,54 @@
+/*欢迎... 系统文本*/
+.welcome_intro_text {
+    -fx-font-size: 40;
+    -fx-font-family: "微软雅黑";
+    -fx-font-weight: bold;
+}
+/*标题文本*/
+.title_text {
+    -fx-font-size: 40px;
+}
+/*问卷介绍文本*/
+.survey_intro_text {
+    -fx-font-size: 28px;
+}
+/*人物和解释框*/
+.agentAndExplainBox {
+    /*第一个值调节人物头顶高度*/
+    -fx-padding: 30px 0 0 10px;
+    /*调节人物和解释框间距*/
+    -fx-spacing: 1px;
+    -fx-alignment: bottom-center;
+}
+/*人物*/
+.agentImage {
+    -fx-alignment: bottom-center;
+}
+/*解释框*/
+.explainBox {
+    /*调节解释框颜色和圆角以及宽度*/
+    -fx-border-width: 3px;
+    -fx-border-radius: 3px;
+    -fx-border-color: black;
+}
+.explainBoxIfRight {
+    -fx-border-color: green;
+}
+.explainBoxIfWrong {
+    -fx-border-color: red;
+}
+/*解释框第一行话*/
+.explainBoxHeader {
+    -fx-alignment: center;
+    -fx-font-size: 25px;
+    -fx-padding: 10px 20px 10px 20px;
+}
+/*解释框解释文本（如果有的话）*/
+.explainBoxContentIfIsText {
+    -fx-font-size: 25px;
+    -fx-padding: 10px 20px 10px 20px;
+}
+/*解释框解释图片（如果是的话）*/
+.explainBoxContentIfIsImage {
+    -fx-padding: 10px 20px 10px 20px;
+}
