@@ -8,9 +8,17 @@
 .title_text {
     -fx-font-size: 40px;
 }
+/*量表指导语文本*/
+.measure_header_text{
+    -fx-font-size: 40px;
+    -fx-wrap-text: true;
+    -fx-padding: 10px 10px 10px 10px;
+}
 /*问卷介绍文本*/
 .survey_intro_text {
     -fx-font-size: 28px;
+    -fx-text-alignment: left;
+    -fx-padding: 0 0 10px 30px;
 }
 /*人物和解释框*/
 .agentAndExplainBox {

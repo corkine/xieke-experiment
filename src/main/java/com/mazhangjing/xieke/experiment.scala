@@ -40,6 +40,7 @@ object XKExperiment {
       |3.1.2 添加了解释图片的上、下左右边距处理
       |3.1.3 添加了伪造图片和解释文字的上下左右边距处理
       |3.1.4 2019年11月21日 使用 CSS 实现大部分样式，交换指导语和前测问卷位置，添加了许多图片指导语，添加了量表表述信息，修改了许多默认值，重新实现了 AgentPane
+      |3.1.5 2019年11月21日 添加了量表对齐和换行处理
       |""".stripMargin
   var FONT_SIZE = 24
   var IMAGE_WIDTH = 1100
@@ -387,7 +388,7 @@ class SurveyScreen(val survey:Survey) extends ScreenAdaptor {
     title.getStyleClass.add("title_text")
     title.setVisible(SU_SHOW_TITLE_NAME)
     //根据 survey.intro 获取介绍
-    val intro = new Label(survey.getIntro)
+    val intro = new TextFlow(new Text(survey.getIntro))
     intro.getStyleClass.add("survey_intro_text")
     titBox.getChildren.addAll(title, intro)
     titBox.setAlignment(Pos.CENTER)
