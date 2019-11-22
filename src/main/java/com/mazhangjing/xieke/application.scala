@@ -24,7 +24,7 @@ object XKApp extends JFXApp {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  val expertTo: LocalDateTime = LocalDate.parse("2019-11-23").atStartOfDay()
+  val expertTo: LocalDateTime = LocalDate.parse("2023-11-23").atStartOfDay()
 
   if (Duration.between(LocalDateTime.now(), expertTo).toDays < 0) {
     new Alert(AlertType.Warning) {
