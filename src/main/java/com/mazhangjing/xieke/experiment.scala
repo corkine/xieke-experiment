@@ -1,11 +1,11 @@
 package com.mazhangjing.xieke
 
-import java.io.{FileWriter, PrintWriter, StringWriter}
-import java.nio.file.Paths
+import java.io.{File, FileReader, FileWriter, PrintWriter, StringWriter}
+import java.nio.file.{Path, Paths}
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util
-import java.util.{List => JList, Map => JMap}
+import java.util.{Properties, List => JList, Map => JMap}
 
 import com.mazhangjing.lab.LabUtils._
 import com.mazhangjing.lab.{Experiment, Screen, ScreenAdaptor, Trial}
@@ -27,8 +27,48 @@ import javafx.scene.{Node, Scene}
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import PropertiesUtils.get
+
+object PropertiesUtils {
+  private val logger = LoggerFactory.getLogger(getClass)
+  def load(from:Path): Properties = {
+    try {
+      val f = new File(from.toUri)
+      val t = new Properties()
+      val fr = new FileReader(f)
+      t.load(fr)
+      fr.close()
+      t
+    } catch {
+      case e: Throwable => logger.warn(s"Can't load Properties from $from: $e"); null
+    }
+  }
+  def get[T](key:String, default: T)(implicit properties: Properties): T = {
+    if (properties == null) {
+      logger.debug(s"Can't load Properties, Use Default $default")
+      default
+    } else {
+      val res = properties.getProperty(key)
+      if (res == null) {
+        logger.debug(s"Can't load Resources with Key $key, Use Default $default")
+        default
+      } else {
+        default match {
+          case _ : Int => res.toInt.asInstanceOf[T]
+          case _ : Long => res.toLong.asInstanceOf[T]
+          case _ : Double => res.toDouble.asInstanceOf[T]
+          case _ : Boolean => res.toBoolean.asInstanceOf[T]
+          case _  => res.asInstanceOf[T]
+        }
+      }
+    }
+  }
+}
 
 object XKExperiment {
+  implicit val default: Properties = PropertiesUtils.load(Paths.get("xieke/default.properties"))
+
+
   val version: String =
     """1.0.0 完成实验编写 @2019-09-02
       |1.0.1-DEMO 添加了许可证支持 @2019-09-03
@@ -42,22 +82,26 @@ object XKExperiment {
       |3.1.4 2019年11月21日 使用 CSS 实现大部分样式，交换指导语和前测问卷位置，添加了许多图片指导语，添加了量表表述信息，修改了许多默认值，重新实现了 AgentPane
       |3.1.5 2019年11月21日 添加了量表对齐和换行处理
       |3.1.6 2019年11月22日 最终版本
+      |3.1.7 2019年11月25日 添加了默认配置机制和PropertiesUtils
       |""".stripMargin
-  var FONT_SIZE = 24
-  var IMAGE_WIDTH = 1100
-  var EMOTION_IMAGE_WIDTH = 300
-  var SU_SHOW_TITLE_NAME = false
-  var SU_VGAP = 10
-  var SU_HGAP_5 = 50
-  var SU_HGAP_9 = 5
-  var SU_SHOW_LINE = true
-  var QU_HGAP = 35
-  var HELP_PADDING_LEFT: Array[Int] = Array(370,200,80)
-  var HELP_TEXT_SPACING = 2
-  var QUESTION_LAYOUT_MARGIN = 200
-  var AGENT_EXPLAIN_IMAGE_WIDTH = 700
+  var FONT_SIZE: Int = get("FONT_SIZE", 24)
+  var IMAGE_WIDTH: Int = get("IMAGE_WIDTH", 1100)
+  var EMOTION_IMAGE_WIDTH: Int = get("EMOTION_IMAGE_WIDTH", 300)
+  var SU_SHOW_TITLE_NAME: Boolean = get("SU_SHOW_TITLE_NAME", false)
+  var SU_VGAP: Int = get("SU_VGAP", 10)
+  var SU_HGAP_5: Int = get("SU_HGAP_5", 50)
+  var SU_HGAP_9: Int = get("SU_HGAP_9", 5)
+  var SU_SHOW_LINE: Boolean = get("SU_SHOW_LINE", true)
+  var QU_HGAP: Int = get("QU_HGAP",35)
+  var HELP_PADDING_LEFT: Array[Int] = Array(
+    get("HELP_PADDING_LEFT_1", 370),
+    get("HELP_PADDING_LEFT_2", 200),
+    get("HELP_PADDING_LEFT_3", 80))
+  var HELP_TEXT_SPACING: Int = get("HELP_TEXT_SPACING", 2)
+  var QUESTION_LAYOUT_MARGIN: Int = get("QUESTION_LAYOUT_MARGIN", 200)
+  var AGENT_EXPLAIN_IMAGE_WIDTH: Int = get("AGENT_EXPLAIN_IMAGE_WIDTH", 700)
 
-  var DEBUG = false
+  var DEBUG: Boolean = get("DEBUG", false)
   var CHOOSED_CONDITION = Condition.NORMAL_SUMMARY
   val INFINITY = 100000000
   val EMOTION_SCALE = 0
