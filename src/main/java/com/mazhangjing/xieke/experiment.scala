@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import PropertiesUtils.get
+import com.typesafe.config.ConfigFactory
 
 object PropertiesUtils {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -66,8 +67,9 @@ object PropertiesUtils {
 }
 
 object XKExperiment {
-  implicit val default: Properties = PropertiesUtils.load(Paths.get("xieke/default.properties"))
 
+  val conf: com.typesafe.config.Config = ConfigFactory.parseFile(new File("xieke/custom.conf"))
+    .withFallback(ConfigFactory.load())
 
   val version: String =
     """1.0.0 完成实验编写 @2019-09-02
@@ -83,25 +85,23 @@ object XKExperiment {
       |3.1.5 2019年11月21日 添加了量表对齐和换行处理
       |3.1.6 2019年11月22日 最终版本
       |3.1.7 2019年11月25日 添加了默认配置机制和PropertiesUtils
+      |3.1.8 2019年11月25日 使用 TypeSafe Config 库解析默认配置文件
       |""".stripMargin
-  var FONT_SIZE: Int = get("FONT_SIZE", 24)
-  var IMAGE_WIDTH: Int = get("IMAGE_WIDTH", 1100)
-  var EMOTION_IMAGE_WIDTH: Int = get("EMOTION_IMAGE_WIDTH", 300)
-  var SU_SHOW_TITLE_NAME: Boolean = get("SU_SHOW_TITLE_NAME", false)
-  var SU_VGAP: Int = get("SU_VGAP", 10)
-  var SU_HGAP_5: Int = get("SU_HGAP_5", 50)
-  var SU_HGAP_9: Int = get("SU_HGAP_9", 5)
-  var SU_SHOW_LINE: Boolean = get("SU_SHOW_LINE", true)
-  var QU_HGAP: Int = get("QU_HGAP",35)
-  var HELP_PADDING_LEFT: Array[Int] = Array(
-    get("HELP_PADDING_LEFT_1", 370),
-    get("HELP_PADDING_LEFT_2", 200),
-    get("HELP_PADDING_LEFT_3", 80))
-  var HELP_TEXT_SPACING: Int = get("HELP_TEXT_SPACING", 2)
-  var QUESTION_LAYOUT_MARGIN: Int = get("QUESTION_LAYOUT_MARGIN", 200)
-  var AGENT_EXPLAIN_IMAGE_WIDTH: Int = get("AGENT_EXPLAIN_IMAGE_WIDTH", 700)
+  var FONT_SIZE: Int = conf.getInt("FONT_SIZE")
+  var IMAGE_WIDTH: Int = conf.getInt("IMAGE_WIDTH")
+  var EMOTION_IMAGE_WIDTH: Int = conf.getInt("EMOTION_IMAGE_WIDTH")
+  var SU_SHOW_TITLE_NAME: Boolean = conf.getBoolean("SU_SHOW_TITLE_NAME")
+  var SU_VGAP: Int = conf.getInt("SU_VGAP")
+  var SU_HGAP_5: Int = conf.getInt("SU_HGAP_5")
+  var SU_HGAP_9: Int = conf.getInt("SU_HGAP_9")
+  var SU_SHOW_LINE: Boolean = conf.getBoolean("SU_SHOW_LINE")
+  var QU_HGAP: Int = conf.getInt("QU_HGAP")
+  var HELP_PADDING_LEFT: Array[Int] = conf.getIntList("HELP_PADDING_LEFT").asScala.map(_.toInt).toArray
+  var HELP_TEXT_SPACING: Int = conf.getInt("HELP_TEXT_SPACING")
+  var QUESTION_LAYOUT_MARGIN: Int = conf.getInt("QUESTION_LAYOUT_MARGIN")
+  var AGENT_EXPLAIN_IMAGE_WIDTH: Int = conf.getInt("AGENT_EXPLAIN_IMAGE_WIDTH")
 
-  var DEBUG: Boolean = get("DEBUG", false)
+  var DEBUG: Boolean = conf.getBoolean("DEBUG")
   var CHOOSED_CONDITION = Condition.NORMAL_SUMMARY
   val INFINITY = 100000000
   val EMOTION_SCALE = 0

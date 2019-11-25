@@ -26,18 +26,6 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.testfx:testfx-core:4.0.15-alpha" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.assertj:assertj-core:3.11.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.testfx:testfx-junit:4.0.15-alpha" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba.nls:nls-sdk-long-asr:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba.nls:nls-sdk-common:2.0.3" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.41" level="project" />
-    <orderEntry type="library" name="Maven: com.aliyun:aliyun-java-sdk-core:3.5.1" level="project" />
-    <orderEntry type="library" name="Maven: org.json:json:20170516" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-transport:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-resolver:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-handler:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec-http:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.9.Final" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba.nls:nls-sdk-short-asr:2.0.3" level="project" />
+    <orderEntry type="library" name="Maven: com.typesafe:config:1.4.0" level="project" />
   </component>
 </module>
