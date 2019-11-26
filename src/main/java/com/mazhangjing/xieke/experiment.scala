@@ -86,6 +86,7 @@ object XKExperiment {
       |3.1.6 2019年11月22日 最终版本
       |3.1.7 2019年11月25日 添加了默认配置机制和PropertiesUtils
       |3.1.8 2019年11月25日 使用 TypeSafe Config 库解析默认配置文件
+      |3.1.9 2019年11月26日 添加前测问卷和后测问卷的区分，使用不同 Survey 类提供实现，而不再使用同一套配置
       |""".stripMargin
   var FONT_SIZE: Int = conf.getInt("FONT_SIZE")
   var IMAGE_WIDTH: Int = conf.getInt("IMAGE_WIDTH")
@@ -105,9 +106,10 @@ object XKExperiment {
   var CHOOSED_CONDITION = Condition.NORMAL_SUMMARY
   val INFINITY = 100000000
   val EMOTION_SCALE = 0
-  val AGENT_SCALE = 1
-  val MOV_SCALE = 2
-  val FEEDBACK_SCALE = 3
+  val EMOTION_SCALE2 = 1
+  val AGENT_SCALE = 2
+  val MOV_SCALE = 3
+  val FEEDBACK_SCALE = 4
   val FOLDER_PREFIX = "xieke"
   val WELCOME_INTRO = "welcome.png"
   val EXERCISE_INTRO = "exercise_intro.png"
@@ -196,7 +198,7 @@ class BasicTrial extends Trial {
     val afterLearnIntro = new ImageScreen(image = AFTER_LEARN_INTRO).initScreen()
     screens.add(afterLearnIntro)
     //情绪量表
-    val postEmotionSurvey = config.getSurveys.get(EMOTION_SCALE).copy()
+    val postEmotionSurvey = config.getSurveys.get(EMOTION_SCALE2)
     val postEmotion = new SurveyScreen(postEmotionSurvey).initScreen()
     result.postEmotion = postEmotionSurvey
     screens.add(postEmotion)
